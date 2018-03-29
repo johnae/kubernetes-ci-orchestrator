@@ -2,29 +2,38 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 
 	nats "github.com/nats-io/go-nats"
-	"k8s.io/api/batch/v1"
+	v1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
+var r = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+func randHex() string {
+	return fmt.Sprintf("%x", r.Uint64())
+}
+
 func createVmJobSpec(kind string, backoffLimit int32, activeDeadlineSeconds int64) *v1.Job {
 	charDev := apiv1.HostPathCharDev
 	privileged := true
+	r := randHex()
 	return &v1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: kind + "-job",
+			Name: kind + "-job-" + r,
 		},
 		Spec: v1.JobSpec{
 			BackoffLimit:          &backoffLimit,
 			ActiveDeadlineSeconds: &activeDeadlineSeconds,
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: kind + "-job",
+					Name: kind + "-job-" + r,
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
@@ -88,16 +97,17 @@ func createVmJobSpec(kind string, backoffLimit int32, activeDeadlineSeconds int6
 }
 
 func createContainerJobSpec(kind string, backoffLimit int32, activeDeadlineSeconds int64) *v1.Job {
+	r := randHex()
 	return &v1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: kind + "-job",
+			Name: kind + "-job-" + r,
 		},
 		Spec: v1.JobSpec{
 			BackoffLimit:          &backoffLimit,
 			ActiveDeadlineSeconds: &activeDeadlineSeconds,
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: kind + "-job",
+					Name: kind + "-job-" + r,
 				},
 				Spec: apiv1.PodSpec{
 					RestartPolicy: "Never",
