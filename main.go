@@ -115,7 +115,27 @@ func createContainerJobSpec(kind string, backoffLimit int32, activeDeadlineSecon
 						{
 							Name:  "buildkite-ubuntu-builder",
 							Image: "buildkite/agent:ubuntu",
+							EnvFrom: []apiv1.EnvFromSource{
+								{
+									ConfigMapRef: &apiv1.ConfigMapEnvSource{
+										LocalObjectReference: apiv1.LocalObjectReference{
+											Name: "buildkite-config",
+										},
+									},
+								},
+							},
 							Env: []apiv1.EnvVar{
+								{
+									Name: "SSH_PRIVATE_RSA_KEY",
+									ValueFrom: &apiv1.EnvVarSource{
+										SecretKeyRef: &apiv1.SecretKeySelector{
+											LocalObjectReference: apiv1.LocalObjectReference{
+												Name: "buildkite-ssh-key-secret",
+											},
+											Key: "id_rsa",
+										},
+									},
+								},
 								{
 									Name:  "BUILDKITE_AGENT_TOKEN",
 									Value: os.Getenv("BUILDKITE_AGENT_TOKEN"),
